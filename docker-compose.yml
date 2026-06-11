@@ -1,0 +1,46 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        FRONTEND_PORT: ${FRONTEND_PORT}
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+      - FRONTEND_PORT=${FRONTEND_PORT}
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      args:
+        BACKEND_PORT: ${BACKEND_PORT}
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    volumes:
+      - ./backend:/app
+    environment:
+      - OPENSEARCH_URL=${OPENSEARCH_URL}
+      - BACKEND_PORT=${BACKEND_PORT}
+    depends_on:
+      - "opensearch-node"
+
+  opensearch-node:
+    image: opensearchproject/opensearch:2.11.1
+    environment:
+      - discovery.type=single-node
+      - "DISABLE_SECURITY_PLUGIN=true"
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "${OPENSEARCH_PORT}:${OPENSEARCH_PORT}"
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+  
+volumes:
+  opensearch-data:
+  frontend-node-modules:

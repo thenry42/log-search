@@ -1,0 +1,11 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Credential files
+secrets/
+secrets/*
+
+# Test files
+test_technique.pdf
