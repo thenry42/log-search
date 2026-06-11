@@ -10,7 +10,7 @@ services:
       - ./frontend:/app
       - frontend-node-modules:/app/node_modules
     environment:
-      - VITE_API_URL=${VITE_API_URL}
+      - VITE_API_URL=${BACKEND_URL}
       - FRONTEND_PORT=${FRONTEND_PORT}
     depends_on:
       - backend
