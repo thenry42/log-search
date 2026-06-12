@@ -1,36 +1,37 @@
 import { useEffect, useState } from "react";
 import type { HealthResponse } from "../types/api";
 
-type BackendState = "loading" | "ok" | "error";
+type OpenSearchState = "loading" | "ok" | "error";
 
 /**
- * Check the status of the backend every 10 seconds.
+ * Check the status of the OpenSearch cluster and index every 10 seconds.
+ * TODO: check if the opensearch index exists.
  */
-export default function BackendStatus() {
-  const [state, setState] = useState<BackendState>("loading");
+export default function OpenSearchStatus() {
+  const [state, setState] = useState<OpenSearchState>("loading");
 
   useEffect(() => {
-    const checkBackend = () => {
+    const checkOpenSearch = () => {
       fetch(`${import.meta.env.VITE_API_URL}/`)
         .then((res) => {
           if (!res.ok) throw new Error("not ok");
           return res.json() as Promise<HealthResponse>;
         })
-        .then((data) => setState(data.status === "ok" ? "ok" : "error"))
+        .then((data) => setState(data.opensearch === "ok" ? "ok" : "error"))
         .catch(() => setState("error"));
     };
 
-    checkBackend();
-    const id = setInterval(checkBackend, 10_000);
+    checkOpenSearch();
+    const id = setInterval(checkOpenSearch, 10_000);
     return () => clearInterval(id);
   }, []);
 
   const label =
     state === "loading"
-      ? "Checking backend…"
+      ? "Checking OpenSearch…"
       : state === "ok"
-        ? "Backend: OK"
-        : "Backend: unavailable";
+        ? "OpenSearch: OK"
+        : "OpenSearch: unavailable";
 
   const colorClass =
     state === "loading"

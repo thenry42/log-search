@@ -5,6 +5,7 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.models.Log import Log, LogLevel
+from app.opensearch_client import get_client
 
 app = FastAPI()
 
@@ -18,7 +19,12 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"status": "ok"}
+    try:
+        if get_client().ping():
+            return {"status": "ok", "opensearch": "ok"}
+    except Exception:
+        pass
+    return {"status": "error", "opensearch": "unavailable"}
 
 
 @app.post("/logs")
