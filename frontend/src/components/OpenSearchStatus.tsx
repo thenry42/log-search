@@ -1,28 +1,24 @@
 import { useEffect, useState } from "react";
-import type { HealthResponse } from "../types/api";
 
 type OpenSearchState = "loading" | "ok" | "error";
 
 /**
- * Check the status of the OpenSearch cluster and index every 10 seconds.
- * TODO: check if the opensearch index exists.
+ * Check the status of the OpenSearch cluster and index every 5 seconds.
  */
 export default function OpenSearchStatus() {
   const [state, setState] = useState<OpenSearchState>("loading");
 
   useEffect(() => {
+    setState("loading");
+
     const checkOpenSearch = () => {
-      fetch(`${import.meta.env.VITE_API_URL}/`)
-        .then((res) => {
-          if (!res.ok) throw new Error("not ok");
-          return res.json() as Promise<HealthResponse>;
-        })
-        .then((data) => setState(data.opensearch === "ok" ? "ok" : "error"))
+      fetch(`${import.meta.env.VITE_API_URL}/health/opensearch`, { cache: "no-store" })
+        .then((res) => setState(res.ok ? "ok" : "error"))
         .catch(() => setState("error"));
     };
 
     checkOpenSearch();
-    const id = setInterval(checkOpenSearch, 10_000);
+    const id = setInterval(checkOpenSearch, 5_000);
     return () => clearInterval(id);
   }, []);
 

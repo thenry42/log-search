@@ -1,27 +1,27 @@
 import { useEffect, useState } from "react";
-import type { HealthResponse } from "../types/api";
 
 type BackendState = "loading" | "ok" | "error";
 
 /**
- * Check the status of the backend every 10 seconds.
+ * Check the status of the backend every 5 seconds.
  */
 export default function BackendStatus() {
   const [state, setState] = useState<BackendState>("loading");
 
   useEffect(() => {
+    setState("loading");
+
     const checkBackend = () => {
-      fetch(`${import.meta.env.VITE_API_URL}/`)
+      fetch(`${import.meta.env.VITE_API_URL}/`, { cache: "no-store" })
         .then((res) => {
           if (!res.ok) throw new Error("not ok");
-          return res.json() as Promise<HealthResponse>;
+          setState("ok");
         })
-        .then((data) => setState(data.status === "ok" ? "ok" : "error"))
         .catch(() => setState("error"));
     };
 
     checkBackend();
-    const id = setInterval(checkBackend, 10_000);
+    const id = setInterval(checkBackend, 5_000);
     return () => clearInterval(id);
   }, []);
 

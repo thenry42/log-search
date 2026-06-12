@@ -15,7 +15,7 @@ class LogLevel(str, Enum):
 class Log(BaseModel):
     """
     A log entry with:
-    - id: the log entry id (UUID)
+    - id: the log entry id only for backend usage (UUID)
     - level: level of the log (INFO, WARNING, DEBUG,ERROR) as Enum
     - message: the log message (str)
     - service: the service that generated the log (str)

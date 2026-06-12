@@ -17,7 +17,7 @@ down: ## Stop containers
 
 stop: down ## Alias for down
 
-clean: ## Stop containers, remove volumes and orphans
+clean: ## Stop containers, remove volumes (including database data) and orphans
 	docker compose down -v --remove-orphans
 
 logs: ## Follow service logs
