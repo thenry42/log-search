@@ -1,0 +1,12 @@
+import BackendStatus from "./BackendStatus";
+
+export default function Header() {
+  return (
+    <header className="border-b border-gray-200 px-8 py-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Log Search</h1>
+        <BackendStatus />
+      </div>
+    </header>
+  );
+}

@@ -1,19 +1,12 @@
-import { useEffect, useState } from "react";
+import Footer from "./components/Footer";
+import Header from "./components/Header";
 
 export default function App() {
-  const [status, setStatus] = useState("Checking backend…");
-
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/`)
-      .then((res) => res.json())
-      .then((data) => setStatus(`Backend: ${data.status}`))
-      .catch(() => setStatus("Backend: unavailable"));
-  }, []);
-
   return (
-    <div className="m-8 font-sans">
-      <h1 className="text-2xl font-bold">log-search</h1>
-      <p className="text-gray-600">{status}</p>
+    <div className="flex min-h-screen flex-col font-sans">
+      <Header />
+      <main className="flex-1 px-8 py-8" />
+      <Footer />
     </div>
   );
 }
