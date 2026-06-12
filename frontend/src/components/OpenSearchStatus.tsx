@@ -4,6 +4,7 @@ type OpenSearchState = "loading" | "ok" | "error";
 
 /**
  * Check the status of the OpenSearch cluster and index every 5 seconds.
+ * Cold start take a few seconds, conttrary to the backend which is ready immediately.
  */
 export default function OpenSearchStatus() {
   const [state, setState] = useState<OpenSearchState>("loading");
