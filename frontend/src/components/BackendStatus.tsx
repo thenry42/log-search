@@ -1,60 +1,48 @@
 import { useEffect, useState } from "react";
+import { api } from "../api/client";
 
-type BackendState = "loading" | "ok" | "error";
-
-/**
- * Check the status of the backend every 5 seconds.
- */
 export default function BackendStatus() {
-  const [state, setState] = useState<BackendState>("loading");
+  const [status, setStatus] = useState<"loading" | "up" | "down">("loading");
 
   useEffect(() => {
-    setState("loading");
+    let cancelled = false;
 
-    const checkBackend = () => {
-      fetch(`${import.meta.env.VITE_API_URL}/`, { cache: "no-store" })
-        .then((res) => {
-          if (!res.ok) throw new Error("not ok");
-          setState("ok");
-        })
-        .catch(() => setState("error"));
+    async function ping() {
+      try {
+        await api.get("/");
+        if (!cancelled) setStatus("up");
+      } catch {
+        if (!cancelled) setStatus("down");
+      }
+    }
+
+    ping();
+    const t = setInterval(ping, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
     };
-
-    checkBackend();
-    const id = setInterval(checkBackend, 5_000);
-    return () => clearInterval(id);
   }, []);
 
-  const label =
-    state === "loading"
-      ? "Checking backend…"
-      : state === "ok"
-        ? "Backend: OK"
-        : "Backend: unavailable";
+  const color =
+    status === "up"
+      ? "bg-green-100 text-green-800 border-green-300"
+      : status === "down"
+        ? "bg-red-100 text-red-800 border-red-300"
+        : "bg-gray-200 text-gray-700 border-gray-300";
 
-  const colorClass =
-    state === "loading"
-      ? "bg-gray-200 text-gray-700 border-gray-300"
-      : state === "ok"
-        ? "bg-green-100 text-green-800 border-green-300"
-        : "bg-red-100 text-red-800 border-red-300";
+  const dot =
+    status === "up" ? "bg-green-500" : status === "down" ? "bg-red-500" : "bg-gray-400";
+
+  const label =
+    status === "up" ? "Backend OK" : status === "down" ? "Backend down" : "Checking backend...";
 
   return (
-    <button
-      type="button"
-      disabled={state === "loading"}
-      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium ${colorClass}`}
+    <span
+      className={"inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium " + color}
     >
-      <span
-        className={`h-2 w-2 rounded-full ${
-          state === "ok"
-            ? "bg-green-500 animate-pulse"
-            : state === "error"
-              ? "bg-red-500"
-              : "bg-gray-400"
-        }`}
-      />
+      <span className={"h-2 w-2 rounded-full " + dot} />
       {label}
-    </button>
+    </span>
   );
 }

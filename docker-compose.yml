@@ -27,6 +27,8 @@ services:
     environment:
       - OPENSEARCH_URL=${OPENSEARCH_URL}
       - BACKEND_PORT=${BACKEND_PORT}
+      - FRONTEND_PORT=${FRONTEND_PORT}
+      - OPENSEARCH_PORT=${OPENSEARCH_PORT}
     depends_on:
       - "opensearch-node"
 

@@ -1,13 +1,17 @@
-from fastapi import FastAPI, HTTPException, Response
+import os
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from opensearchpy.exceptions import OpenSearchException
 
-from app.models.Log import Log
-from app.opensearch_client import LOGS_INDEX, ensure_index, get_client, is_reachable
+from app.log_search import search_opensearch_logs
+from app.models.Log import Log, LogCreate, LogLevel
+from app.opensearch_client import create_opensearch_log, ensure_index, is_reachable
 
 app = FastAPI()
 
-# Ensure the opensearch index exists on startup
+
 @app.on_event("startup")
 def startup():
     try:
@@ -15,20 +19,26 @@ def startup():
     except OpenSearchException:
         pass
 
+
+cors_origins = []
+for port in [os.getenv("FRONTEND_PORT"), os.getenv("OPENSEARCH_PORT")]:
+    if port:
+        cors_origins.append(f"http://localhost:{port}")
+        cors_origins.append(f"http://127.0.0.1:{port}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=cors_origins,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
-# Health check endpoints (used for the backend status)
+
 @app.get("/")
 def read_root():
     return Response(status_code=200)
 
 
-# Health check endpoints (used for the opensearch status)
 @app.get("/health/opensearch")
 def opensearch_health():
     if not is_reachable():
@@ -41,29 +51,16 @@ def opensearch_health():
 
 
 @app.post("/logs", status_code=201)
-def create_log(log: Log):
-    return log
-
-
-@app.get("/logs/search")
-def search_logs() -> list[Log]:
+def create_log(log: LogCreate):
     try:
-        ensure_index()
-        response = get_client().search(
-            index=LOGS_INDEX,
-            body={"query": {"match_all": {}}},
-        )
+        return create_opensearch_log(log)
     except OpenSearchException:
         raise HTTPException(status_code=503)
 
-    return [
-        Log(
-            id=hit["_source"]["id"],
-            level=hit["_source"]["level"],
-            message=hit["_source"]["message"],
-            service=hit["_source"]["service"],
-            timestamp=hit["_source"]["timestamp"],
-            id_opensearch=hit["_id"],
-        )
-        for hit in response["hits"]["hits"]
-    ]
+
+@app.get("/logs/search")
+def search_logs(q: str | None = None, level: LogLevel | None = None, service: str | None = None):
+    try:
+        return search_opensearch_logs(q=q, level=level, service=service)
+    except OpenSearchException:
+        raise HTTPException(status_code=503)

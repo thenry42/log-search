@@ -1,4 +1,4 @@
-FROM node:22-alpine
+FROM node:22-slim
 
 WORKDIR /app
 
@@ -12,4 +12,4 @@ COPY . .
 
 EXPOSE ${FRONTEND_PORT}
 
-CMD ["sh", "-c", "npm run dev -- --host 0.0.0.0 --port ${FRONTEND_PORT}"]
+CMD ["sh", "-c", "npm install && npm run dev -- --host 0.0.0.0 --port ${FRONTEND_PORT}"]

@@ -1,14 +1,16 @@
 import os
 import urllib.request
+from datetime import date, datetime
 
 from opensearchpy import OpenSearch
 
-LOGS_INDEX = "logs"
+from app.models.Log import Log, LogCreate
+
+LOGS_INDEX_PATTERN = "logs-*"
 
 LOGS_INDEX_BODY = {
     "mappings": {
         "properties": {
-            "id": {"type": "keyword"},
             "level": {"type": "keyword"},
             "message": {"type": "text"},
             "service": {"type": "keyword"},
@@ -18,31 +20,52 @@ LOGS_INDEX_BODY = {
 }
 
 
-def is_reachable() -> bool:
+def logs_index_name(for_date=None):
+    if for_date is None:
+        d = date.today()
+    elif isinstance(for_date, datetime):
+        d = for_date.date()
+    else:
+        d = for_date
+    return f"logs-{d.strftime('%Y-%m-%d')}"
+
+
+def is_reachable():
     url = os.getenv("OPENSEARCH_URL")
     if not url:
         return False
     try:
-        with urllib.request.urlopen(url, timeout=3):
-            return True
+        urllib.request.urlopen(url, timeout=3)
+        return True
     except Exception:
         return False
 
 
-def get_client() -> OpenSearch:
-    """
-    Get the opensearch client.
-    """
+def get_client():
     url = os.getenv("OPENSEARCH_URL")
     if not url:
         raise ValueError("OPENSEARCH_URL is not set")
     return OpenSearch(hosts=[url])
 
 
-def ensure_index() -> None:
-    """
-    Create the logs index if it does not exist.
-    """
+def ensure_index(for_date=None):
+    index = logs_index_name(for_date)
     client = get_client()
-    if not client.indices.exists(index=LOGS_INDEX):
-        client.indices.create(index=LOGS_INDEX, body=LOGS_INDEX_BODY)
+    if not client.indices.exists(index=index):
+        client.indices.create(index=index, body=LOGS_INDEX_BODY)
+    return index
+
+
+def create_opensearch_log(log: LogCreate):
+    index = ensure_index(log.timestamp)
+    client = get_client()
+    response = client.index(
+        index=index,
+        body=log.model_dump(mode="json"),
+        refresh="wait_for",
+    )
+    return Log(
+        **log.model_dump(),
+        id_opensearch=response["_id"],
+        index_opensearch=index,
+    )

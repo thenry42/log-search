@@ -1,58 +1,48 @@
 import { useEffect, useState } from "react";
+import { api } from "../api/client";
 
-type OpenSearchState = "loading" | "ok" | "error";
-
-/**
- * Check the status of the OpenSearch cluster and index every 5 seconds.
- * Cold start take a few seconds, conttrary to the backend which is ready immediately.
- */
 export default function OpenSearchStatus() {
-  const [state, setState] = useState<OpenSearchState>("loading");
+  const [status, setStatus] = useState<"loading" | "up" | "down">("loading");
 
   useEffect(() => {
-    setState("loading");
+    let cancelled = false;
 
-    const checkOpenSearch = () => {
-      fetch(`${import.meta.env.VITE_API_URL}/health/opensearch`, { cache: "no-store" })
-        .then((res) => setState(res.ok ? "ok" : "error"))
-        .catch(() => setState("error"));
+    async function ping() {
+      try {
+        await api.get("/health/opensearch");
+        if (!cancelled) setStatus("up");
+      } catch {
+        if (!cancelled) setStatus("down");
+      }
+    }
+
+    ping();
+    const t = setInterval(ping, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
     };
-
-    checkOpenSearch();
-    const id = setInterval(checkOpenSearch, 5_000);
-    return () => clearInterval(id);
   }, []);
 
-  const label =
-    state === "loading"
-      ? "Checking OpenSearch…"
-      : state === "ok"
-        ? "OpenSearch: OK"
-        : "OpenSearch: unavailable";
+  const color =
+    status === "up"
+      ? "bg-green-100 text-green-800 border-green-300"
+      : status === "down"
+        ? "bg-red-100 text-red-800 border-red-300"
+        : "bg-gray-200 text-gray-700 border-gray-300";
 
-  const colorClass =
-    state === "loading"
-      ? "bg-gray-200 text-gray-700 border-gray-300"
-      : state === "ok"
-        ? "bg-green-100 text-green-800 border-green-300"
-        : "bg-red-100 text-red-800 border-red-300";
+  const dot =
+    status === "up" ? "bg-green-500" : status === "down" ? "bg-red-500" : "bg-gray-400";
+
+  const label =
+    status === "up" ? "OpenSearch OK" : status === "down" ? "OpenSearch down" : "Checking OpenSearch...";
 
   return (
-    <button
-      type="button"
-      disabled={state === "loading"}
-      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium ${colorClass}`}
+    <span
+      className={"inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium " + color}
     >
-      <span
-        className={`h-2 w-2 rounded-full ${
-          state === "ok"
-            ? "bg-green-500 animate-pulse"
-            : state === "error"
-              ? "bg-red-500"
-              : "bg-gray-400"
-        }`}
-      />
+      <span className={"h-2 w-2 rounded-full " + dot} />
       {label}
-    </button>
+    </span>
   );
 }
