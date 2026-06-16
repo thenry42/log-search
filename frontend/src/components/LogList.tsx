@@ -1,14 +1,21 @@
 import type { Log } from "../types/log";
 import LogListItem from "./LogListItem";
+import LogPagination from "./LogPagination";
 
 export default function LogList({
   logs,
+  page,
+  total,
   loading,
   error,
+  onPageChange,
 }: {
   logs: Log[];
+  page: number;
+  total: number;
   loading: boolean;
   error: string;
+  onPageChange: (page: number) => void;
 }) {
   return (
     <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 rounded-xl border border-gray-200 bg-gray-50 p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
@@ -25,6 +32,8 @@ export default function LogList({
           <LogListItem key={log.id_opensearch} log={log} />
         ))}
       </ul>
+
+      <LogPagination page={page} total={total} onPageChange={onPageChange} />
     </section>
   );
 }

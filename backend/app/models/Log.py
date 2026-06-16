@@ -21,3 +21,10 @@ class LogCreate(BaseModel):
 class Log(LogCreate):
     id_opensearch: str
     index_opensearch: str = ""
+
+
+class LogSearchResult(BaseModel):
+    logs: list[Log]
+    total: int
+    page: int
+    page_size: int

@@ -1,4 +1,4 @@
-import type { Log, LogLevel, LogSearchParams } from "../types/log";
+import type { Log, LogLevel, LogSearchParams, LogSearchResult } from "../types/log";
 import { api } from "./client";
 
 export async function createLog(data: {
@@ -11,9 +11,10 @@ export async function createLog(data: {
   return log;
 }
 
-export async function searchLogs(params: LogSearchParams) {
-  const { data } = await api.get<Log[]>("/logs/search", {
+export async function searchLogs(params: LogSearchParams, page = 1) {
+  const { data } = await api.get<LogSearchResult>("/logs/search", {
     params: {
+      page,
       ...(params.q ? { q: params.q } : {}),
       ...(params.level ? { level: params.level } : {}),
     },

@@ -10,16 +10,20 @@ import type { Log, LogSearchParams } from "./types/log";
 
 export default function App() {
   const [searchParams, setSearchParams] = useState<LogSearchParams>({ q: "", level: "" });
+  const [page, setPage] = useState(1);
   const [logs, setLogs] = useState<Log[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  async function loadLogs() {
+  async function loadLogs(targetPage = page) {
     setLoading(true);
     setError("");
     try {
-      const data = await searchLogs(searchParams);
-      setLogs(data);
+      const data = await searchLogs(searchParams, targetPage);
+      setLogs(data.logs);
+      setTotal(data.total);
+      setPage(data.page);
     } catch {
       setError("Couldn't load logs");
     } finally {
@@ -27,9 +31,14 @@ export default function App() {
     }
   }
 
+  function handleSearchChange(params: LogSearchParams) {
+    setSearchParams(params);
+    setPage(1);
+  }
+
   useEffect(() => {
-    loadLogs();
-  }, [searchParams]);
+    loadLogs(page);
+  }, [searchParams, page]);
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-gray-900 dark:bg-gray-900 dark:text-gray-100">
@@ -40,8 +49,15 @@ export default function App() {
           <AddRandomLogForm onLogAdded={loadLogs} />
         </div>
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
-          <LogSearchArea params={searchParams} onChange={setSearchParams} />
-          <LogList logs={logs} loading={loading} error={error} />
+          <LogSearchArea params={searchParams} onChange={handleSearchChange} />
+          <LogList
+            logs={logs}
+            page={page}
+            total={total}
+            loading={loading}
+            error={error}
+            onPageChange={setPage}
+          />
         </div>
       </main>
       <Footer />

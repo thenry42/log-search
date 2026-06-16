@@ -15,3 +15,12 @@ export type Log = {
   id_opensearch: string;
   index_opensearch: string;
 };
+
+export const LOG_PAGE_SIZE = 20;
+
+export type LogSearchResult = {
+  logs: Log[];
+  total: number;
+  page: number;
+  page_size: number;
+};

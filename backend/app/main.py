@@ -68,8 +68,15 @@ def create_log(log: LogCreate):
 
 
 @app.get("/logs/search")
-def search_logs(q: str | None = None, level: LogLevel | None = None, service: str | None = None):
+def search_logs(
+    q: str | None = None,
+    level: LogLevel | None = None,
+    service: str | None = None,
+    page: int = 1,
+):
+    if page < 1:
+        raise HTTPException(status_code=400, detail="page must be >= 1")
     try:
-        return search_opensearch_logs(q=q, level=level, service=service)
+        return search_opensearch_logs(q=q, level=level, service=service, page=page)
     except OpenSearchException:
         raise HTTPException(status_code=503)

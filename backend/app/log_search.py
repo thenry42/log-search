@@ -1,5 +1,7 @@
-from app.models.Log import Log, LogLevel
+from app.models.Log import Log, LogLevel, LogSearchResult
 from app.opensearch_client import LOGS_INDEX_PATTERN, ensure_index, get_client
+
+PAGE_SIZE = 20
 
 
 def _wildcard(field, text):
@@ -46,7 +48,7 @@ def build_search_query(q=None, level=None, service=None):
     return body
 
 
-def search_opensearch_logs(q=None, level=None, service=None):
+def search_opensearch_logs(q=None, level=None, service=None, page=1):
     ensure_index()
     client = get_client()
     response = client.search(
@@ -54,9 +56,14 @@ def search_opensearch_logs(q=None, level=None, service=None):
         body={
             "query": build_search_query(q, level, service),
             "sort": [{"timestamp": {"order": "desc"}}],
-            "size": 20,
+            "from": (page - 1) * PAGE_SIZE,
+            "size": PAGE_SIZE,
         },
     )
+
+    total = response["hits"]["total"]
+    if isinstance(total, dict):
+        total = total["value"]
 
     logs = []
     for hit in response["hits"]["hits"]:
@@ -69,4 +76,9 @@ def search_opensearch_logs(q=None, level=None, service=None):
             id_opensearch=hit["_id"],
             index_opensearch=hit["_index"],
         ))
-    return logs
+    return LogSearchResult(
+        logs=logs,
+        total=total,
+        page=page,
+        page_size=PAGE_SIZE,
+    )
