@@ -33,7 +33,7 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-      <Header />
+      <Header onOpenSearchUp={loadLogs} />
       <main className="flex min-h-0 flex-1 gap-8 px-8 py-8">
         <div className="flex shrink-0 flex-col gap-4">
           <AddLogForm onLogAdded={loadLogs} />

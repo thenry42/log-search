@@ -2,12 +2,13 @@ import os
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 from opensearchpy.exceptions import OpenSearchException
 
+from app.health_stream import get_opensearch_state, health_event_stream
 from app.log_search import search_opensearch_logs
 from app.models.Log import Log, LogCreate, LogLevel
-from app.opensearch_client import create_opensearch_log, ensure_index, is_reachable
+from app.opensearch_client import create_opensearch_log, ensure_index
 
 app = FastAPI()
 
@@ -41,13 +42,21 @@ def read_root():
 
 @app.get("/health/opensearch")
 def opensearch_health():
-    if not is_reachable():
-        return Response(status_code=503)
-    try:
-        ensure_index()
+    state = get_opensearch_state()
+    if state == "up":
         return Response(status_code=200)
-    except OpenSearchException:
+    if state == "starting":
         return Response(status_code=503)
+    return Response(status_code=502)
+
+
+@app.get("/events/health")
+async def health_events():
+    return StreamingResponse(
+        health_event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
+    )
 
 
 @app.post("/logs", status_code=201)

@@ -1,29 +1,10 @@
-import { useEffect, useState } from "react";
-import { api } from "../api/client";
+import type { BackendHealthState } from "../hooks/useHealthStream";
 
-export default function BackendStatus() {
-  const [status, setStatus] = useState<"loading" | "up" | "down">("loading");
+type BackendStatusProps = {
+  status: BackendHealthState;
+};
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function ping() {
-      try {
-        await api.get("/");
-        if (!cancelled) setStatus("up");
-      } catch {
-        if (!cancelled) setStatus("down");
-      }
-    }
-
-    ping();
-    const t = setInterval(ping, 5000);
-    return () => {
-      cancelled = true;
-      clearInterval(t);
-    };
-  }, []);
-
+export default function BackendStatus({ status }: BackendStatusProps) {
   const color =
     status === "up"
       ? "bg-green-100 text-green-800 border-green-300"

@@ -1,41 +1,34 @@
-import { useEffect, useState } from "react";
-import { api } from "../api/client";
+import type { OpenSearchHealthState } from "../hooks/useHealthStream";
 
-export default function OpenSearchStatus() {
-  const [status, setStatus] = useState<"loading" | "up" | "down">("loading");
+type OpenSearchStatusProps = {
+  status: OpenSearchHealthState;
+};
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function ping() {
-      try {
-        await api.get("/health/opensearch");
-        if (!cancelled) setStatus("up");
-      } catch {
-        if (!cancelled) setStatus("down");
-      }
-    }
-
-    ping();
-    const t = setInterval(ping, 5000);
-    return () => {
-      cancelled = true;
-      clearInterval(t);
-    };
-  }, []);
-
+export default function OpenSearchStatus({ status }: OpenSearchStatusProps) {
   const color =
     status === "up"
       ? "bg-green-100 text-green-800 border-green-300"
-      : status === "down"
-        ? "bg-red-100 text-red-800 border-red-300"
-        : "bg-gray-200 text-gray-700 border-gray-300";
+      : status === "starting" || status === "loading"
+        ? "bg-amber-100 text-amber-800 border-amber-300"
+        : status === "down"
+          ? "bg-red-100 text-red-800 border-red-300"
+          : "bg-amber-100 text-amber-800 border-amber-300";
 
   const dot =
-    status === "up" ? "bg-green-500" : status === "down" ? "bg-red-500" : "bg-gray-400";
+    status === "up"
+      ? "bg-green-500"
+      : status === "down"
+        ? "bg-red-500"
+        : "bg-amber-500";
 
   const label =
-    status === "up" ? "OpenSearch OK" : status === "down" ? "OpenSearch down" : "Checking OpenSearch...";
+    status === "up"
+      ? "OpenSearch OK"
+      : status === "starting"
+        ? "OpenSearch starting..."
+        : status === "down"
+          ? "OpenSearch down"
+          : "Checking OpenSearch...";
 
   return (
     <span
