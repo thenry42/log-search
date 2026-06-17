@@ -132,7 +132,7 @@ sequenceDiagram
 
 ### Health checks
 
-The header polls `GET /health` every 3 seconds. When OpenSearch comes back up after being down, the app automatically reloads logs so data appears without a manual refresh.
+The header polls `GET /health` every 2 seconds. When OpenSearch comes back up after being down, the app automatically reloads logs so data appears without a manual refresh.
 
 ```mermaid
 sequenceDiagram
