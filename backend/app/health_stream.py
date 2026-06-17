@@ -7,6 +7,7 @@ from app.opensearch_client import ensure_index, is_reachable
 
 
 def get_opensearch_state():
+    """Return OpenSearch status as up, starting, or down."""
     if not is_reachable():
         return "down"
     try:
@@ -17,6 +18,7 @@ def get_opensearch_state():
 
 
 async def health_event_stream():
+    """Yield SSE payloads when OpenSearch health state changes."""
     last_opensearch = None
     while True:
         opensearch = get_opensearch_state()

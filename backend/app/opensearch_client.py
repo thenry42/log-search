@@ -21,6 +21,7 @@ LOGS_INDEX_BODY = {
 
 
 def logs_index_name(for_date=None):
+    """Return the daily OpenSearch index name for the given date."""
     if for_date is None:
         d = date.today()
     elif isinstance(for_date, datetime):
@@ -31,6 +32,7 @@ def logs_index_name(for_date=None):
 
 
 def is_reachable():
+    """Return whether OpenSearch responds at OPENSEARCH_URL."""
     url = os.getenv("OPENSEARCH_URL")
     if not url:
         return False
@@ -42,6 +44,7 @@ def is_reachable():
 
 
 def get_client():
+    """Create an OpenSearch client from OPENSEARCH_URL."""
     url = os.getenv("OPENSEARCH_URL")
     if not url:
         raise ValueError("OPENSEARCH_URL is not set")
@@ -49,6 +52,7 @@ def get_client():
 
 
 def ensure_index(for_date=None):
+    """Create the daily logs index if it does not already exist."""
     index = logs_index_name(for_date)
     client = get_client()
     if not client.indices.exists(index=index):
@@ -57,6 +61,7 @@ def ensure_index(for_date=None):
 
 
 def create_opensearch_log(log: LogCreate):
+    """Index a log document and return it with OpenSearch metadata."""
     index = ensure_index(log.timestamp)
     client = get_client()
     response = client.index(

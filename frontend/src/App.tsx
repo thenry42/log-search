@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { searchLogs } from "./api/logs";
 import AddLogForm from "./components/AddLogForm";
 import AddRandomLogForm from "./components/AddRandomLogForm";
@@ -18,7 +18,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  async function loadLogs(targetPage = page) {
+  const loadLogs = useCallback(async (targetPage = page) => {
     setLoading(true);
     setError("");
     try {
@@ -32,7 +32,7 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [searchParams, page]);
 
   function handleSearchChange(params: LogSearchParams) {
     setSearchParams(params);
@@ -40,8 +40,8 @@ export default function App() {
   }
 
   useEffect(() => {
-    loadLogs(page);
-  }, [searchParams, page]);
+    void loadLogs(page);
+  }, [loadLogs, page]);
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-gray-900 dark:bg-gray-900 dark:text-gray-100">

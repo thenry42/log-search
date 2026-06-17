@@ -5,6 +5,7 @@ PAGE_SIZE = 20
 
 
 def _wildcard(field, text):
+    """Build a case-insensitive wildcard clause for an OpenSearch field."""
     return {
         "wildcard": {
             field: {
@@ -16,6 +17,7 @@ def _wildcard(field, text):
 
 
 def build_search_query(q=None, level=None, service=None):
+    """Compose an OpenSearch query from optional search filters."""
     must = []
     filt = []
 
@@ -49,6 +51,7 @@ def build_search_query(q=None, level=None, service=None):
 
 
 def search_opensearch_logs(q=None, level=None, service=None, page=1):
+    """Search indexed logs and return a paginated result with level counts."""
     ensure_index()
     client = get_client()
     response = client.search(
