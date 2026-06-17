@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class LogLevel(str, Enum):
@@ -13,8 +13,8 @@ class LogLevel(str, Enum):
 
 class LogCreate(BaseModel):
     level: LogLevel
-    message: str
-    service: str
+    service: str = Field(min_length=1, max_length=64)
+    message: str = Field(min_length=1, max_length=2048)
     timestamp: datetime
 
 

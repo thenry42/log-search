@@ -1,4 +1,4 @@
-import { useHealthStream } from "../hooks/useHealthStream";
+import { useHealth } from "../hooks/useHealth";
 import BackendStatus from "./BackendStatus";
 import OpenSearchStatus from "./OpenSearchStatus";
 
@@ -7,7 +7,7 @@ type HeaderProps = {
 };
 
 export default function Header({ onOpenSearchUp }: HeaderProps) {
-  const health = useHealthStream(onOpenSearchUp);
+  const health = useHealth(onOpenSearchUp);
 
   return (
     <header className="border-b border-gray-200 px-8 py-4 dark:border-gray-700">

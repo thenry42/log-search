@@ -1,7 +1,7 @@
-import type { BackendHealthState } from "../hooks/useHealthStream";
+import type { HealthStatus } from "../hooks/useHealth";
 
 type BackendStatusProps = {
-  status: BackendHealthState;
+  status: HealthStatus;
 };
 
 export default function BackendStatus({ status }: BackendStatusProps) {

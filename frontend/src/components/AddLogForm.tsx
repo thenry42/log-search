@@ -2,6 +2,9 @@ import { useState, type SubmitEvent } from "react";
 import { createLog } from "../api/logs";
 import { LOG_LEVELS, type LogLevel } from "../types/log";
 
+const SERVICE_MAX_LEN = 64;
+const MESSAGE_MAX_LEN = 2048;
+
 export default function AddLogForm({ onLogAdded }: { onLogAdded: () => void }) {
   const [level, setLevel] = useState<LogLevel>("INFO");
   const [service, setService] = useState("");
@@ -60,6 +63,8 @@ export default function AddLogForm({ onLogAdded }: { onLogAdded: () => void }) {
             value={service}
             onChange={(e) => setService(e.target.value)}
             required
+            minLength={1}
+            maxLength={SERVICE_MAX_LEN}
             className="rounded border border-gray-300 bg-white px-3 py-2 dark:border-gray-600 dark:bg-gray-800"
           />
         </label>
@@ -70,6 +75,8 @@ export default function AddLogForm({ onLogAdded }: { onLogAdded: () => void }) {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             required
+            minLength={1}
+            maxLength={MESSAGE_MAX_LEN}
             rows={4}
             className="rounded border border-gray-300 bg-white px-3 py-2 dark:border-gray-600 dark:bg-gray-800"
           />

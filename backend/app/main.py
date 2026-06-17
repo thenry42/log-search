@@ -2,13 +2,16 @@ import os
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response, StreamingResponse
+from fastapi.responses import Response
 from opensearchpy.exceptions import OpenSearchException
 
-from app.health_stream import get_opensearch_state, health_event_stream
 from app.log_search import search_opensearch_logs
 from app.models.Log import LogCreate, LogLevel
-from app.opensearch_client import create_opensearch_log, ensure_index
+from app.opensearch_client import (
+    create_opensearch_log,
+    ensure_index,
+    opensearch_ready,
+)
 
 app = FastAPI()
 
@@ -22,11 +25,11 @@ def startup():
         pass
 
 
-cors_origins = []
-for port in [os.getenv("FRONTEND_PORT"), os.getenv("OPENSEARCH_PORT")]:
-    if port:
-        cors_origins.append(f"http://localhost:{port}")
-        cors_origins.append(f"http://127.0.0.1:{port}")
+port = os.getenv("FRONTEND_PORT")
+cors_origins = [
+    f"http://localhost:{port}",
+    f"http://127.0.0.1:{port}",
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,25 +45,10 @@ def read_root():
     return Response(status_code=200)
 
 
-@app.get("/health/opensearch")
-def opensearch_health():
-    """Report OpenSearch availability as an HTTP status code."""
-    state = get_opensearch_state()
-    if state == "up":
-        return Response(status_code=200)
-    if state == "starting":
-        return Response(status_code=503)
-    return Response(status_code=502)
-
-
-@app.get("/events/health")
-async def health_events():
-    """Stream OpenSearch health changes as server-sent events."""
-    return StreamingResponse(
-        health_event_stream(),
-        media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
-    )
+@app.get("/health")
+def health():
+    """Report backend and OpenSearch availability."""
+    return {"opensearch": "up" if opensearch_ready() else "down"}
 
 
 @app.post("/logs", status_code=201)

@@ -1,5 +1,4 @@
 import os
-import urllib.request
 from datetime import date, datetime
 
 from opensearchpy import OpenSearch
@@ -31,14 +30,10 @@ def logs_index_name(for_date=None):
     return f"logs-{d.strftime('%Y-%m-%d')}"
 
 
-def is_reachable():
-    """Return whether OpenSearch responds at OPENSEARCH_URL."""
-    url = os.getenv("OPENSEARCH_URL")
-    if not url:
-        return False
+def opensearch_ready():
+    """Return whether OpenSearch responds to a ping."""
     try:
-        urllib.request.urlopen(url, timeout=3)
-        return True
+        return get_client().ping()
     except Exception:
         return False
 
