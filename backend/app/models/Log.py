@@ -28,3 +28,4 @@ class LogSearchResult(BaseModel):
     total: int
     page: int
     page_size: int
+    level_counts: dict[str, int]

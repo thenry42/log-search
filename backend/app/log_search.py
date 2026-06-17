@@ -58,6 +58,9 @@ def search_opensearch_logs(q=None, level=None, service=None, page=1):
             "sort": [{"timestamp": {"order": "desc"}}],
             "from": (page - 1) * PAGE_SIZE,
             "size": PAGE_SIZE,
+            "aggs": {
+                "levels": {"terms": {"field": "level"}},
+            },
         },
     )
 
@@ -76,9 +79,14 @@ def search_opensearch_logs(q=None, level=None, service=None, page=1):
             id_opensearch=hit["_id"],
             index_opensearch=hit["_index"],
         ))
+    level_counts = {lvl.value: 0 for lvl in LogLevel}
+    for bucket in response["aggregations"]["levels"]["buckets"]:
+        level_counts[bucket["key"]] = bucket["doc_count"]
+
     return LogSearchResult(
         logs=logs,
         total=total,
         page=page,
         page_size=PAGE_SIZE,
+        level_counts=level_counts,
     )

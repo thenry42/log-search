@@ -18,9 +18,19 @@ export type Log = {
 
 export const LOG_PAGE_SIZE = 20;
 
+export type LogLevelCounts = Record<LogLevel, number>;
+
 export type LogSearchResult = {
   logs: Log[];
   total: number;
   page: number;
   page_size: number;
+  level_counts: LogLevelCounts;
+};
+
+export const EMPTY_LEVEL_COUNTS: LogLevelCounts = {
+  DEBUG: 0,
+  INFO: 0,
+  WARNING: 0,
+  ERROR: 0,
 };
