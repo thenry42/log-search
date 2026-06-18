@@ -2,6 +2,9 @@
 
 A small log viewer with search, built with FastAPI, React, and OpenSearch. Add logs through the UI, filter by text and level, and browse paginated results.
 
+You can watch the video presentation here:
+https://we.tl/t-d26iVsmobt8UWk46
+
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose
